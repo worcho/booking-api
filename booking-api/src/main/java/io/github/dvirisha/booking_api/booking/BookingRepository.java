@@ -2,10 +2,12 @@ package io.github.dvirisha.booking_api.booking;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("select (count(b) > 0) from Booking b where b.roomId = ?1 and b.startDate < ?3 and b.endDate > ?2")
