@@ -1,5 +1,7 @@
-package io.github.dvirisha.booking_api.common.security;
+package io.github.dvirisha.booking_api.common.security.service;
 
+import io.github.dvirisha.booking_api.common.security.UserDetailsRepository;
+import io.github.dvirisha.booking_api.common.security.UserEntity;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
