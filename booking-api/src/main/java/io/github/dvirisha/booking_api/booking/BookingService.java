@@ -7,7 +7,6 @@ import io.github.dvirisha.booking_api.common.error.ConflictException;
 import io.github.dvirisha.booking_api.common.error.NotFoundException;
 import io.github.dvirisha.booking_api.room.Room;
 import io.github.dvirisha.booking_api.room.RoomRepository;
-import jakarta.websocket.server.PathParam;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,12 +25,15 @@ public class BookingService {
         this.roomRepository = roomRepository;
     }
 
+    @Transactional
     public BookingResponse create(CreateBookingRequest request) {
         Room room = roomRepository.findById(request.roomId())
                 .orElseThrow(() -> new NotFoundException("Room not found."));
 
-        boolean bookingExist = bookingRepository.isBookingExist(request.roomId(), request.startDate(), request.endDate());
-        if (bookingExist) {
+        roomRepository.lockById(room.getId())
+                .orElseThrow(() -> new NotFoundException("Room not found."));
+
+        if (bookingRepository.isBookingExist(request.roomId(), request.startDate(), request.endDate())) {
             throw new ConflictException("Room is not unavailable for that period.");
         }
 
