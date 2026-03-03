@@ -2,6 +2,7 @@ package io.github.dvirisha.booking_api.room;
 
 import io.github.dvirisha.booking_api.room.dto.CreateRoomRequest;
 import io.github.dvirisha.booking_api.room.dto.RoomResponse;
+import io.github.dvirisha.booking_api.room.dto.UpdateRoomRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,7 +44,7 @@ public class RoomController {
     }
 
     @PutMapping("/{id}")
-    public RoomResponse updateById(@PathVariable Long id, @Valid @RequestBody CreateRoomRequest request) {
+    public RoomResponse updateById(@PathVariable Long id, @Valid @RequestBody UpdateRoomRequest request) {
         return roomService.updateById(id, request);
     }
 

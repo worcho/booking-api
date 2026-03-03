@@ -4,6 +4,7 @@ import io.github.dvirisha.booking_api.room.dto.CreateRoomRequest;
 import io.github.dvirisha.booking_api.room.dto.RoomResponse;
 import io.github.dvirisha.booking_api.common.error.ConflictException;
 import io.github.dvirisha.booking_api.common.error.NotFoundException;
+import io.github.dvirisha.booking_api.room.dto.UpdateRoomRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +25,7 @@ public class RoomService {
         if (repository.existsByNameIgnoreCase(request.name())) {
             throw new ConflictException("Room with name '%s' already exists.".formatted(request.name()));
         }
-        return convertToDto(repository.save(new Room(request.name(), request.capacity())));
+        return convertToDto(repository.save(new Room(request.name(), request.capacity(), request.price())));
     }
 
     public RoomResponse findById(Long id) {
@@ -40,7 +41,7 @@ public class RoomService {
     }
 
     @Transactional
-    public RoomResponse updateById(Long id, CreateRoomRequest request) {
+    public RoomResponse updateById(Long id, UpdateRoomRequest request) {
         Room room = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Room not found."));
         updateEntity(room, request);
@@ -60,11 +61,13 @@ public class RoomService {
         return new RoomResponse(entity.getId(),
                 entity.getName(),
                 entity.getCapacity(),
+                entity.getPrice(),
                 entity.getCreatedAt());
     }
 
-    private void updateEntity(Room entity, CreateRoomRequest roomRequest) {
+    private void updateEntity(Room entity, UpdateRoomRequest roomRequest) {
         entity.setName(roomRequest.name());
         entity.setCapacity(roomRequest.capacity());
+        entity.setPrice(roomRequest.price());
     }
 }

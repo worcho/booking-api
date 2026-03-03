@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
@@ -31,12 +32,16 @@ public class Room {
     @Column(nullable = false)
     private Integer capacity;
 
+    @Column(nullable = false)
+    private BigDecimal price;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    public Room(String name, Integer capacity) {
+    public Room(String name, Integer capacity, BigDecimal price) {
         this.name = name;
         this.capacity = capacity;
+        this.price = price;
         this.createdAt = Instant.now();
     }
 }
