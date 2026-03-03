@@ -1,12 +1,14 @@
 package io.github.dvirisha.booking_api.room;
 
 import io.github.dvirisha.booking_api.room.dto.CreateRoomRequest;
+import io.github.dvirisha.booking_api.room.dto.GetRoomFilter;
 import io.github.dvirisha.booking_api.room.dto.RoomResponse;
 import io.github.dvirisha.booking_api.room.dto.UpdateRoomRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -34,8 +36,8 @@ public class RoomController {
     }
 
     @GetMapping
-    public List<RoomResponse> getAll() {
-        return roomService.findAll();
+    public List<RoomResponse> getAll(@ModelAttribute GetRoomFilter filter) {
+        return roomService.findAll(filter);
     }
 
     @GetMapping("/{id}")

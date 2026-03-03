@@ -1,9 +1,10 @@
 package io.github.dvirisha.booking_api.room;
 
-import io.github.dvirisha.booking_api.room.dto.CreateRoomRequest;
-import io.github.dvirisha.booking_api.room.dto.RoomResponse;
 import io.github.dvirisha.booking_api.common.error.ConflictException;
 import io.github.dvirisha.booking_api.common.error.NotFoundException;
+import io.github.dvirisha.booking_api.room.dto.CreateRoomRequest;
+import io.github.dvirisha.booking_api.room.dto.GetRoomFilter;
+import io.github.dvirisha.booking_api.room.dto.RoomResponse;
 import io.github.dvirisha.booking_api.room.dto.UpdateRoomRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,8 +34,8 @@ public class RoomService {
                 .orElseThrow(() -> new NotFoundException("Room not found.")));
     }
 
-    public List<RoomResponse> findAll() {
-        return repository.findAll()
+    public List<RoomResponse> findAll(GetRoomFilter filter) {
+        return repository.findAll(filter.capacityMin())
                 .stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
