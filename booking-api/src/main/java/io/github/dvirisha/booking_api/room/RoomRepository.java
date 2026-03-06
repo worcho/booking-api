@@ -20,7 +20,4 @@ public interface RoomRepository extends JpaRepository<Room, Long>, JpaSpecificat
     @Query("select r from Room r where r.id = ?1")
     Optional<Room> lockById(Long id);
 
-    @Query("select r from Room r where r.capacity > ?1")
-    List<Room> findAll(Integer capacityMin);
-
 }

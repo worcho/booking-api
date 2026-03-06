@@ -6,6 +6,7 @@ import io.github.dvirisha.booking_api.room.dto.CreateRoomRequest;
 import io.github.dvirisha.booking_api.room.dto.GetRoomFilter;
 import io.github.dvirisha.booking_api.room.dto.RoomResponse;
 import io.github.dvirisha.booking_api.room.dto.UpdateRoomRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,27 +16,31 @@ import java.util.stream.Collectors;
 @Component
 public class RoomService {
 
-    private final RoomRepository repository;
+    private final RoomRepository roomRepository;
 
-    public RoomService(RoomRepository repository) {
-        this.repository = repository;
+    public RoomService(RoomRepository roomRepository) {
+        this.roomRepository = roomRepository;
     }
 
     @Transactional
     public RoomResponse create(CreateRoomRequest request) {
-        if (repository.existsByNameIgnoreCase(request.name())) {
+        if (roomRepository.existsByNameIgnoreCase(request.name())) {
             throw new ConflictException("Room with name '%s' already exists.".formatted(request.name()));
         }
-        return convertToDto(repository.save(new Room(request.name(), request.capacity(), request.price())));
+        return convertToDto(roomRepository.save(new Room(request.name(), request.capacity(), request.price())));
     }
 
     public RoomResponse findById(Long id) {
-        return convertToDto(repository.findById(id)
+        return convertToDto(roomRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Room not found.")));
     }
 
     public List<RoomResponse> findAll(GetRoomFilter filter) {
-        return repository.findAll(filter.capacityMin())
+        Specification<Room> specification = Specification.where(RoomSpecifications.capacityAtLeast(filter.capacityMin())
+                        .and(RoomSpecifications.priceAtLeast(filter.priceMin())
+                        .and(RoomSpecifications.priceAtMost(filter.priceMax()))));
+
+        return roomRepository.findAll(specification)
                 .stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
@@ -43,7 +48,7 @@ public class RoomService {
 
     @Transactional
     public RoomResponse updateById(Long id, UpdateRoomRequest request) {
-        Room room = repository.findById(id)
+        Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Room not found."));
         updateEntity(room, request);
         return convertToDto(room);
@@ -51,8 +56,8 @@ public class RoomService {
 
     @Transactional
     public void deleteById(Long id) {
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
+        if (roomRepository.existsById(id)) {
+            roomRepository.deleteById(id);
         } else {
             throw new NotFoundException("Room not found.");
         }
