@@ -1,21 +1,27 @@
 package io.github.dvirisha.booking_api.room;
 
+import io.github.dvirisha.booking_api.PageResponse;
 import io.github.dvirisha.booking_api.common.error.ConflictException;
 import io.github.dvirisha.booking_api.common.error.NotFoundException;
 import io.github.dvirisha.booking_api.room.dto.CreateRoomRequest;
 import io.github.dvirisha.booking_api.room.dto.GetRoomFilter;
 import io.github.dvirisha.booking_api.room.dto.RoomResponse;
 import io.github.dvirisha.booking_api.room.dto.UpdateRoomRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 @Component
 public class RoomService {
 
+    private final int PAGE_MAX_SIZE = 100;
     private final RoomRepository roomRepository;
 
     public RoomService(RoomRepository roomRepository) {
@@ -35,15 +41,57 @@ public class RoomService {
                 .orElseThrow(() -> new NotFoundException("Room not found.")));
     }
 
-    public List<RoomResponse> findAll(GetRoomFilter filter) {
-        Specification<Room> specification = Specification.where(RoomSpecifications.capacityAtLeast(filter.capacityMin())
-                        .and(RoomSpecifications.priceAtLeast(filter.priceMin())
-                        .and(RoomSpecifications.priceAtMost(filter.priceMax()))));
+    public PageResponse<RoomResponse> findAll(GetRoomFilter filter, Pageable pageable) {
+        if (filter.priceMin() != null && filter.priceMax() != null && filter.priceMin().compareTo(filter.priceMax()) > 0) {
+            throw new IllegalArgumentException("priceMin cannot be greater than priceMax");
+        }
 
-        return roomRepository.findAll(specification)
-                .stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        Specification<Room> specification =
+                Specification.where(RoomSpecifications.capacityAtLeast(filter.capacityMin())
+                                .and(RoomSpecifications.priceAtLeast(filter.priceMin())
+                                .and(RoomSpecifications.priceAtMost(filter.priceMax()))));
+
+        Page<RoomResponse> page = roomRepository.findAll(specification, normalizePageable(pageable))
+                .map(this::convertToDto);
+
+        return new PageResponse<>(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                toSortList(page.getSort())
+        );
+    }
+
+    private Pageable normalizePageable(Pageable pageable) {
+        int requestedSize = pageable.getPageSize();
+
+        int safeSize = Math.min(requestedSize, PAGE_MAX_SIZE);
+        Sort safeSort = validateSort(pageable.getSort());
+
+        return PageRequest.of(pageable.getPageNumber(), safeSize, safeSort);
+    }
+
+    private Sort validateSort(Sort sort) {
+        Set<String> allowedSortFields = Set.of("id", "capacity", "price");
+
+        if (sort.isUnsorted()) {
+            return Sort.by(Sort.Direction.ASC, "id");
+        }
+
+        for (Sort.Order order : sort) {
+            if (!allowedSortFields.contains(order.getProperty())) {
+                throw new IllegalArgumentException("Sorting by field '%s' is not allowed".formatted(order.getProperty()));
+            }
+        }
+        return sort;
+    }
+
+    private List<String> toSortList(Sort sort){
+        return sort.stream()
+                .map(order -> order.getProperty() + ", " + order.getDirection().name().toLowerCase())
+                .toList();
     }
 
     @Transactional
