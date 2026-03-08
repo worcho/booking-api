@@ -1,12 +1,16 @@
 package io.github.dvirisha.booking_api.booking;
 
+import io.github.dvirisha.booking_api.room.Room;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,8 +32,9 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "room_id", nullable = false)
-    private Long roomId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id", nullable = false)
+    private Room room;
 
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
@@ -44,8 +49,8 @@ public class Booking {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    public Booking(Long roomId, LocalDate startDate, LocalDate endDate, BookingStatus status, Instant createdAt) {
-        this.roomId = roomId;
+    public Booking(Room room, LocalDate startDate, LocalDate endDate, BookingStatus status, Instant createdAt) {
+        this.room = room;
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;

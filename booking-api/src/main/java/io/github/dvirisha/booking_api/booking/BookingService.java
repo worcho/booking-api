@@ -43,7 +43,7 @@ public class BookingService {
             throw new ConflictException("Room is not unavailable for that period.");
         }
 
-        return convertToDto(bookingRepository.save(new Booking(room.getId(),
+        return convertToDto(bookingRepository.save(new Booking(room,
                 request.startDate(),
                 request.endDate(),
                 BookingStatus.CREATED,
@@ -102,7 +102,7 @@ public class BookingService {
             throw new ConflictException("Booking already started");
         }
 
-        boolean bookingExist = bookingRepository.isBookingExist(booking.getRoomId(), request.startDate(), request.endDate());
+        boolean bookingExist = bookingRepository.isBookingExist(booking.getRoom().getId(), request.startDate(), request.endDate());
         if (bookingExist) {
             throw new ConflictException("Room is not unavailable for that period.");
         }
@@ -114,7 +114,7 @@ public class BookingService {
 
     private BookingResponse convertToDto(Booking entity) {
         return new BookingResponse(entity.getId(),
-                entity.getRoomId(),
+                entity.getRoom().getId(),
                 entity.getStartDate(),
                 entity.getEndDate(),
                 entity.getStatus(),

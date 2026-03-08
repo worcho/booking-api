@@ -9,7 +9,7 @@ public final class BookingSpecifications {
     public static Specification<Booking> withRoomId(Long roomId) {
         return (root, query, criteriaBuilder) ->
                 roomId == null ? criteriaBuilder.conjunction()
-                        : criteriaBuilder.equal(root.get("roomId"), roomId);
+                        : criteriaBuilder.equal(root.get("room").get("id"), roomId);
     }
 
     public static Specification<Booking> withStatus(BookingStatus status) {
