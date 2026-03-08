@@ -115,6 +115,7 @@ public class BookingService {
     private BookingResponse convertToDto(Booking entity) {
         return new BookingResponse(entity.getId(),
                 entity.getRoom().getId(),
+                entity.getRoom().getName(),
                 entity.getStartDate(),
                 entity.getEndDate(),
                 entity.getStatus(),

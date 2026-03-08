@@ -8,6 +8,7 @@ import java.time.LocalDate;
 public record BookingResponse(
         Long id,
         Long roomId,
+        String roomName,
         LocalDate startDate,
         LocalDate endDate,
         BookingStatus status,

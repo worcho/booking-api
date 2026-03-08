@@ -22,3 +22,6 @@ server:
 logging:
   pattern:
     level: "%5p [traceId=%X{traceId}]"
+#  level:
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.orm.jdbc.bind: TRACE
