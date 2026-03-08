@@ -1,18 +1,24 @@
 package io.github.dvirisha.booking_api.booking;
 
+import io.github.dvirisha.booking_api.PageResponse;
 import io.github.dvirisha.booking_api.booking.dto.BookingResponse;
 import io.github.dvirisha.booking_api.booking.dto.CreateBookingRequest;
+import io.github.dvirisha.booking_api.booking.dto.GetBookingFilter;
 import io.github.dvirisha.booking_api.booking.dto.UpdateBookingRequest;
 import io.github.dvirisha.booking_api.common.error.ConflictException;
 import io.github.dvirisha.booking_api.common.error.NotFoundException;
+import io.github.dvirisha.booking_api.common.util.PageUtil;
 import io.github.dvirisha.booking_api.room.Room;
 import io.github.dvirisha.booking_api.room.RoomRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 @Component
 public class BookingService {
@@ -49,18 +55,28 @@ public class BookingService {
                 .orElseThrow(() -> new NotFoundException("Booking not found.")));
     }
 
-    public List<BookingResponse> findAll() {
-        return bookingRepository.findAll()
-                .stream()
-                .map(this::convertToDto)
-                .toList();
-    }
+    public PageResponse<BookingResponse> findAll(GetBookingFilter filter, Pageable pageable) {
+        if (filter.startDate() != null && filter.endDate() != null && !filter.startDate().isBefore(filter.endDate())) {
+            throw new IllegalArgumentException("startDate must be before endDate");
+        }
+        Specification<Booking> specification = Specification.where(
+                BookingSpecifications.withRoomId(filter.roomId())
+                        .and(BookingSpecifications.withStatus(filter.status()))
+                        .and(BookingSpecifications.withStartDate(filter.startDate()))
+                        .and(BookingSpecifications.withEndDate(filter.endDate()))
+        );
 
-    public List<BookingResponse> findByRoomId(Long id, LocalDate startDate, LocalDate endDate) {
-        return bookingRepository.findByRoomId(id, startDate, endDate)
-                .stream()
-                .map(this::convertToDto)
-                .toList();
+        Page<BookingResponse> page = bookingRepository.findAll(specification, PageUtil.normalizePageable(pageable, Set.of("id", "startDate", "endDate", "status")))
+                .map(this::convertToDto);
+
+        return new PageResponse<>(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                PageUtil.toSortList(page.getSort())
+        );
     }
 
     @Transactional

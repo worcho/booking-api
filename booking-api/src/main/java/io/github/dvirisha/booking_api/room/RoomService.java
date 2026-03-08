@@ -3,6 +3,7 @@ package io.github.dvirisha.booking_api.room;
 import io.github.dvirisha.booking_api.PageResponse;
 import io.github.dvirisha.booking_api.common.error.ConflictException;
 import io.github.dvirisha.booking_api.common.error.NotFoundException;
+import io.github.dvirisha.booking_api.common.util.PageUtil;
 import io.github.dvirisha.booking_api.room.dto.CreateRoomRequest;
 import io.github.dvirisha.booking_api.room.dto.GetRoomFilter;
 import io.github.dvirisha.booking_api.room.dto.RoomResponse;
@@ -51,7 +52,7 @@ public class RoomService {
                                 .and(RoomSpecifications.priceAtLeast(filter.priceMin())
                                 .and(RoomSpecifications.priceAtMost(filter.priceMax()))));
 
-        Page<RoomResponse> page = roomRepository.findAll(specification, normalizePageable(pageable))
+        Page<RoomResponse> page = roomRepository.findAll(specification, PageUtil.normalizePageable(pageable, Set.of("id", "capacity", "price")))
                 .map(this::convertToDto);
 
         return new PageResponse<>(
@@ -60,38 +61,8 @@ public class RoomService {
                 page.getSize(),
                 page.getTotalElements(),
                 page.getTotalPages(),
-                toSortList(page.getSort())
+                PageUtil.toSortList(page.getSort())
         );
-    }
-
-    private Pageable normalizePageable(Pageable pageable) {
-        int requestedSize = pageable.getPageSize();
-
-        int safeSize = Math.min(requestedSize, PAGE_MAX_SIZE);
-        Sort safeSort = validateSort(pageable.getSort());
-
-        return PageRequest.of(pageable.getPageNumber(), safeSize, safeSort);
-    }
-
-    private Sort validateSort(Sort sort) {
-        Set<String> allowedSortFields = Set.of("id", "capacity", "price");
-
-        if (sort.isUnsorted()) {
-            return Sort.by(Sort.Direction.ASC, "id");
-        }
-
-        for (Sort.Order order : sort) {
-            if (!allowedSortFields.contains(order.getProperty())) {
-                throw new IllegalArgumentException("Sorting by field '%s' is not allowed".formatted(order.getProperty()));
-            }
-        }
-        return sort;
-    }
-
-    private List<String> toSortList(Sort sort){
-        return sort.stream()
-                .map(order -> order.getProperty() + ", " + order.getDirection().name().toLowerCase())
-                .toList();
     }
 
     @Transactional

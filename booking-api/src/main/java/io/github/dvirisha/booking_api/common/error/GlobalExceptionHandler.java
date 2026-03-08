@@ -41,6 +41,13 @@ public class GlobalExceptionHandler {
                 .body(new ApiError(400, "Validation failed", traceId(), fieldErrors, Instant.now()));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    private ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException ex){
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ApiError(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), traceId(), List.of(), Instant.now()));
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<?> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest req) {
         return ResponseEntity

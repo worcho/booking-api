@@ -1,12 +1,16 @@
 package io.github.dvirisha.booking_api.booking;
 
+import io.github.dvirisha.booking_api.PageResponse;
 import io.github.dvirisha.booking_api.booking.dto.BookingResponse;
 import io.github.dvirisha.booking_api.booking.dto.CreateBookingRequest;
+import io.github.dvirisha.booking_api.booking.dto.GetBookingFilter;
 import io.github.dvirisha.booking_api.booking.dto.UpdateBookingRequest;
 import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,14 +39,14 @@ public class BookingController {
         return bookingService.create(request);
     }
 
+    @GetMapping("")
+    public PageResponse<BookingResponse> findAll(@ModelAttribute GetBookingFilter filter, Pageable pageable) {
+        return bookingService.findAll(filter, pageable);
+    }
+
     @GetMapping("/{id}")
     public BookingResponse findById(@PathVariable Long id) {
         return bookingService.findById(id);
-    }
-
-    @GetMapping("/room/{roomId}")
-    public List<BookingResponse> findByRoomId(@PathVariable Long roomId, @RequestParam("from") LocalDate startDate, @RequestParam("to") LocalDate endDate) {
-        return bookingService.findByRoomId(roomId, startDate, endDate);
     }
 
     @PostMapping("/{id}/cancel")
