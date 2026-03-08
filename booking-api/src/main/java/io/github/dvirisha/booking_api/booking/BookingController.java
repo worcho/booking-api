@@ -8,6 +8,8 @@ import io.github.dvirisha.booking_api.booking.dto.UpdateBookingRequest;
 import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -40,7 +42,8 @@ public class BookingController {
     }
 
     @GetMapping("")
-    public PageResponse<BookingResponse> findAll(@ModelAttribute GetBookingFilter filter, Pageable pageable) {
+    public PageResponse<BookingResponse> findAll(@ModelAttribute GetBookingFilter filter,
+                                                 @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
         return bookingService.findAll(filter, pageable);
     }
 
