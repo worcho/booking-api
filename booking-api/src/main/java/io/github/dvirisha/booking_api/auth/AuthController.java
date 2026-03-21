@@ -1,7 +1,6 @@
-package io.github.dvirisha.booking_api.common.security;
+package io.github.dvirisha.booking_api.auth;
 
-import io.github.dvirisha.booking_api.common.security.dto.AuthRequest;
-import io.github.dvirisha.booking_api.common.security.service.JwtService;
+import io.github.dvirisha.booking_api.auth.dto.GenerateTokenRequest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,8 +22,8 @@ public class AuthController {
     }
 
     @PostMapping("/authenticate")
-    public String generateToken(@RequestBody AuthRequest authRequest) {
-        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.username(), authRequest.password()));
+    public String generateToken(@RequestBody GenerateTokenRequest generateTokenRequest) {
+        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(generateTokenRequest.username(), generateTokenRequest.password()));
         return jwtService.generateToken(authenticate.getName());
     }
 }

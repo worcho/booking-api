@@ -1,6 +1,6 @@
 package io.github.dvirisha.booking_api.room;
 
-import io.github.dvirisha.booking_api.PageResponse;
+import io.github.dvirisha.booking_api.common.PageResponse;
 import io.github.dvirisha.booking_api.common.error.ConflictException;
 import io.github.dvirisha.booking_api.common.error.NotFoundException;
 import io.github.dvirisha.booking_api.common.util.PageUtil;
@@ -14,7 +14,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Set;
 
 @Component

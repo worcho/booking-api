@@ -1,4 +1,4 @@
-package io.github.dvirisha.booking_api.common.security;
+package io.github.dvirisha.booking_api.user;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,7 +25,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserEntity implements UserDetails {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,6 +40,12 @@ public class UserEntity implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    public User(String username, String password, Role role) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

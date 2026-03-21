@@ -1,6 +1,6 @@
-package io.github.dvirisha.booking_api.common.security;
+package io.github.dvirisha.booking_api.auth.security;
 
-import io.github.dvirisha.booking_api.common.security.service.JwtService;
+import io.github.dvirisha.booking_api.auth.JwtService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

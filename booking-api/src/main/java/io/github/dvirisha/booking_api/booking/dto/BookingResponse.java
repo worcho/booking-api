@@ -1,6 +1,7 @@
 package io.github.dvirisha.booking_api.booking.dto;
 
 import io.github.dvirisha.booking_api.booking.BookingStatus;
+import io.github.dvirisha.booking_api.user.User;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ public record BookingResponse(
         LocalDate startDate,
         LocalDate endDate,
         BookingStatus status,
+        String username,
         Instant createdAt
 ) {
 }

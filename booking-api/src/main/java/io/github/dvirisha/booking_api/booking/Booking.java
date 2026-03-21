@@ -1,5 +1,6 @@
 package io.github.dvirisha.booking_api.booking;
 
+import io.github.dvirisha.booking_api.user.User;
 import io.github.dvirisha.booking_api.room.Room;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,14 +47,19 @@ public class Booking {
     @Column(nullable = false)
     private BookingStatus status;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    public Booking(Room room, LocalDate startDate, LocalDate endDate, BookingStatus status, Instant createdAt) {
+    public Booking(Room room, LocalDate startDate, LocalDate endDate, BookingStatus status, User user, Instant createdAt) {
         this.room = room;
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
+        this.user = user;
         this.createdAt = createdAt;
     }
 }

@@ -1,4 +1,4 @@
-package io.github.dvirisha.booking_api;
+package io.github.dvirisha.booking_api.common;
 
 import java.util.List;
 

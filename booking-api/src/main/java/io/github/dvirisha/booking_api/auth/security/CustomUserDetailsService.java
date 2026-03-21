@@ -1,7 +1,7 @@
-package io.github.dvirisha.booking_api.common.security.service;
+package io.github.dvirisha.booking_api.auth.security;
 
-import io.github.dvirisha.booking_api.common.security.UserDetailsRepository;
-import io.github.dvirisha.booking_api.common.security.UserEntity;
+import io.github.dvirisha.booking_api.user.User;
+import io.github.dvirisha.booking_api.user.UserRepository;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,15 +13,15 @@ import org.springframework.stereotype.Service;
 public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
-    private UserDetailsRepository userDetailsRepository;
+    private UserRepository userRepository;
 
     @Override
     @NullMarked
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity userEntity = userDetailsRepository.findByUsername(username);
-        if (userEntity == null){
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
             throw new UsernameNotFoundException("Username not found.");
         }
-        return userEntity;
+        return user;
     }
 }

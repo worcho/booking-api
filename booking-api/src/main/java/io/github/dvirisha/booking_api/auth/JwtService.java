@@ -1,4 +1,4 @@
-package io.github.dvirisha.booking_api.common.security.service;
+package io.github.dvirisha.booking_api.auth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

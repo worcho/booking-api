@@ -1,6 +1,6 @@
 package io.github.dvirisha.booking_api.room;
 
-import io.github.dvirisha.booking_api.PageResponse;
+import io.github.dvirisha.booking_api.common.PageResponse;
 import io.github.dvirisha.booking_api.room.dto.CreateRoomRequest;
 import io.github.dvirisha.booking_api.room.dto.GetRoomFilter;
 import io.github.dvirisha.booking_api.room.dto.RoomResponse;
