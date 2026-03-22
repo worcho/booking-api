@@ -10,8 +10,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.attribute.UserPrincipalNotFoundException;
-
 @Service
 public class AuthService {
 
@@ -31,11 +29,11 @@ public class AuthService {
         userRepository.save(new User(request.username(), passwordEncoder.encode(request.password()), Role.USER));
     }
 
-    public User getCurrentUser() throws UserPrincipalNotFoundException {
+    public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new UserPrincipalNotFoundException("You are not logged in or principal cannot be found.");
+            throw new UnsupportedOperationException("You are not logged in or principal cannot be found.");
         }
 
         Object principal = authentication.getPrincipal();
@@ -46,7 +44,7 @@ public class AuthService {
         return user;
     }
 
-    public Long getCurrentUserId() throws UserPrincipalNotFoundException {
+    public Long getCurrentUserId() {
         return getCurrentUser().getId();
     }
 }

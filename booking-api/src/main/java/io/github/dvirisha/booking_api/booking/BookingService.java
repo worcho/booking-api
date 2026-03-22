@@ -6,6 +6,7 @@ import io.github.dvirisha.booking_api.booking.dto.CreateBookingRequest;
 import io.github.dvirisha.booking_api.booking.dto.GetBookingFilter;
 import io.github.dvirisha.booking_api.booking.dto.UpdateBookingRequest;
 import io.github.dvirisha.booking_api.common.error.ConflictException;
+import io.github.dvirisha.booking_api.common.error.ForbiddenException;
 import io.github.dvirisha.booking_api.common.error.NotFoundException;
 import io.github.dvirisha.booking_api.user.User;
 import io.github.dvirisha.booking_api.auth.AuthService;
@@ -15,11 +16,9 @@ import io.github.dvirisha.booking_api.room.RoomRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Set;
@@ -49,12 +48,7 @@ public class BookingService {
             throw new ConflictException("Room is not unavailable for that period.");
         }
 
-        User currentUser;
-        try {
-            currentUser = authService.getCurrentUser();
-        } catch (UserPrincipalNotFoundException e) {
-            throw new UsernameNotFoundException("You are not logged in");
-        }
+        User currentUser = authService.getCurrentUser();
 
         return convertToDto(bookingRepository.save(new Booking(room,
                 request.startDate(),
@@ -65,6 +59,13 @@ public class BookingService {
     }
 
     public BookingResponse findById(Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Booking not found."));
+
+        if (!booking.getUser().getId().equals(authService.getCurrentUserId())){
+            throw new ForbiddenException("You do not own this booking");
+        }
+
         return convertToDto(bookingRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Booking not found.")));
     }

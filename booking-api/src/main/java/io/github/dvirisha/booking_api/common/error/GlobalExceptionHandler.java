@@ -91,6 +91,20 @@ public class GlobalExceptionHandler {
                 .body(new ApiError(500, ex.getMessage(), traceId(), List.of(), Instant.now()));
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<?> handleForbidden(Exception ex){
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ApiError(403, ex.getMessage(), traceId(), List.of(), Instant.now()));
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<?> unauthorized(Exception ex){
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiError(401, ex.getMessage(), traceId(), List.of(), Instant.now()));
+    }
+
     private String traceId() {
         return MDC.get("traceId");
     }
