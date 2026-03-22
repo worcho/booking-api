@@ -81,7 +81,8 @@ public class BookingService {
                         .and(BookingSpecifications.withEndDate(filter.endDate()))
         );
 
-        Page<BookingResponse> page = bookingRepository.findAll(specification, PageUtil.normalizePageable(pageable, Set.of("id", "startDate", "endDate", "status")))
+        Page<BookingResponse> page = bookingRepository.findAll(specification,
+                        PageUtil.normalizePageable(pageable, Set.of("id", "startDate", "endDate", "status")))
                 .map(this::convertToDto);
 
         return new PageResponse<>(
@@ -105,6 +106,9 @@ public class BookingService {
         if (!booking.getStartDate().isAfter(LocalDate.now())) {
             throw new ConflictException("Booking already started");
         }
+        if (!booking.getUser().getId().equals(authService.getCurrentUserId())){
+            throw new ForbiddenException("You do not own this booking");
+        }
         booking.setStatus(BookingStatus.CANCELLED);
     }
 
@@ -125,6 +129,23 @@ public class BookingService {
         booking.setStartDate(request.startDate());
         booking.setEndDate(request.endDate());
         return convertToDto(booking);
+    }
+
+    public PageResponse<BookingResponse> findMine(Pageable pageable) {
+        Specification<Booking> bookingSpecification = Specification.where(BookingSpecifications.withUserId(authService.getCurrentUserId()));
+
+        Page<BookingResponse> page = bookingRepository.findAll(bookingSpecification,
+                        PageUtil.normalizePageable(pageable, Set.of("id", "startDate", "endDate", "status")))
+                .map(this::convertToDto);
+
+        return new PageResponse<>(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                PageUtil.toSortList(page.getSort())
+        );
     }
 
     private BookingResponse convertToDto(Booking entity) {

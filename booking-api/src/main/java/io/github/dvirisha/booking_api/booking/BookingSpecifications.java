@@ -29,4 +29,10 @@ public final class BookingSpecifications {
                 endDate == null ? criteriaBuilder.conjunction()
                         : criteriaBuilder.lessThanOrEqualTo(root.get("startDate"), endDate);
     }
+
+    public static Specification<Booking> withUserId(Long userId) {
+        return ((root, query, criteriaBuilder) ->
+                userId == null ? criteriaBuilder.conjunction()
+                        : criteriaBuilder.equal(root.get("user").get("id"), userId));
+    }
 }

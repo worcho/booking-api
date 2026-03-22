@@ -47,6 +47,11 @@ public class BookingController {
         return bookingService.findById(id);
     }
 
+    @GetMapping("/me")
+    public PageResponse<BookingResponse> findMine(@PageableDefault(size = 20, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
+        return bookingService.findMine(pageable);
+    }
+
     @PostMapping("/{id}/cancel")
     public void cancelById(@PathVariable Long id) {
         bookingService.cancelBookingById(id);

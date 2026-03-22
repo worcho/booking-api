@@ -1,6 +1,6 @@
 package io.github.dvirisha.booking_api.booking;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -19,7 +19,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, JpaSpec
     boolean isBookingExist(Long roomId, LocalDate startDate, LocalDate endDate);
 
     @Override
+    @NullMarked
     @EntityGraph(attributePaths = {"room", "user"})
-    Page<Booking> findAll(@NonNull Specification<Booking> spec, @NonNull Pageable pageable);
+    Page<Booking> findAll(Specification<Booking> spec, Pageable pageable);
 
 }
