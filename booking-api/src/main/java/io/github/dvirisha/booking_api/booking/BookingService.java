@@ -16,6 +16,7 @@ import io.github.dvirisha.booking_api.room.RoomRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,7 @@ public class BookingService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('USER')")
     public BookingResponse create(CreateBookingRequest request) {
         Room room = roomRepository.findById(request.roomId())
                 .orElseThrow(() -> new NotFoundException("Room not found."));
@@ -58,6 +60,7 @@ public class BookingService {
                 Instant.now())));
     }
 
+    @PreAuthorize("hasRole('USER')")
     public BookingResponse findById(Long id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Booking not found."));
@@ -70,6 +73,7 @@ public class BookingService {
                 .orElseThrow(() -> new NotFoundException("Booking not found.")));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public PageResponse<BookingResponse> findAll(GetBookingFilter filter, Pageable pageable) {
         if (filter.startDate() != null && filter.endDate() != null && !filter.startDate().isBefore(filter.endDate())) {
             throw new IllegalArgumentException("startDate must be before endDate");
@@ -96,6 +100,7 @@ public class BookingService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('USER')")
     public void cancelBookingById(Long id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Booking not found."));
@@ -113,6 +118,7 @@ public class BookingService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('USER')")
     public BookingResponse update(Long id, UpdateBookingRequest request) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Booking not found."));
@@ -131,6 +137,7 @@ public class BookingService {
         return convertToDto(booking);
     }
 
+    @PreAuthorize("hasRole('USER')")
     public PageResponse<BookingResponse> findMine(Pageable pageable) {
         Specification<Booking> bookingSpecification = Specification.where(BookingSpecifications.withUserId(authService.getCurrentUserId()));
 

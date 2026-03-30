@@ -11,6 +11,7 @@ import io.github.dvirisha.booking_api.room.dto.UpdateRoomRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ public class RoomService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public RoomResponse create(CreateRoomRequest request) {
         if (roomRepository.existsByNameIgnoreCase(request.name())) {
             throw new ConflictException("Room with name '%s' already exists.".formatted(request.name()));
@@ -39,6 +41,7 @@ public class RoomService {
                 .orElseThrow(() -> new NotFoundException("Room not found.")));
     }
 
+    @PreAuthorize("hasRole('USER')")
     public PageResponse<RoomResponse> findAll(GetRoomFilter filter, Pageable pageable) {
         if (filter.priceMin() != null && filter.priceMax() != null && filter.priceMin().compareTo(filter.priceMax()) > 0) {
             throw new IllegalArgumentException("priceMin cannot be greater than priceMax");
@@ -63,6 +66,7 @@ public class RoomService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public RoomResponse updateById(Long id, UpdateRoomRequest request) {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Room not found."));
@@ -71,6 +75,7 @@ public class RoomService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteById(Long id) {
         if (roomRepository.existsById(id)) {
             roomRepository.deleteById(id);
