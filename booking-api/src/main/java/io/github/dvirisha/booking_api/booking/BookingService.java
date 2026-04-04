@@ -123,6 +123,10 @@ public class BookingService {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Booking not found."));
 
+        if (!booking.getUser().getId().equals(authService.getCurrentUserId())){
+            throw new ForbiddenException("You do not own this booking");
+        }
+
         if (!request.startDate().isAfter(LocalDate.now())) {
             throw new ConflictException("Booking already started");
         }
