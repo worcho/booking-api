@@ -11,7 +11,6 @@ public record CreateBookingRequest(
         @NotNull
         LocalDate startDate,
         @NotNull
-        LocalDate endDate,
-        BookingStatus status
+        LocalDate endDate
 ) {
 }
