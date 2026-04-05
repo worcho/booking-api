@@ -8,6 +8,7 @@ import io.github.dvirisha.booking_api.booking.BookingStatus;
 import io.github.dvirisha.booking_api.booking.dto.BookingResponse;
 import io.github.dvirisha.booking_api.booking.dto.CreateBookingRequest;
 import io.github.dvirisha.booking_api.common.error.ConflictException;
+import io.github.dvirisha.booking_api.common.error.ForbiddenException;
 import io.github.dvirisha.booking_api.common.error.NotFoundException;
 import io.github.dvirisha.booking_api.room.Room;
 import io.github.dvirisha.booking_api.room.RoomRepository;
@@ -20,7 +21,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -49,15 +49,9 @@ public class BookingServiceTest {
     class CreateTests {
         @Test
         void shouldCreateBookingSuccessfully() {
-            CreateBookingRequest request = new CreateBookingRequest(
-                    1L, LocalDate.of(2026, 4, 5), LocalDate.of(2026, 4, 10));
-
-            Room room = new Room(
-                    1L, "TestRoom", 10, new BigDecimal("50.00"), Instant.now());
-
-            User user = new User();
-            user.setId(1L);
-            user.setUsername("TestUser");
+            CreateBookingRequest request = buildCreateBookingRequest();
+            Room room = buildRoom();
+            User user = buildUser();
 
             when(roomRepository.findById(1L))
                     .thenReturn(Optional.of(room));
@@ -78,8 +72,8 @@ public class BookingServiceTest {
 
             assertAll(
                     () -> assertEquals(1L, response.id()),
-                    () -> assertEquals(LocalDate.of(2026, 4, 5), response.startDate()),
-                    () -> assertEquals(LocalDate.of(2026, 4, 10), response.endDate()),
+                    () -> assertEquals(LocalDate.now().plusDays(1), response.startDate()),
+                    () -> assertEquals(LocalDate.now().plusDays(5), response.endDate()),
                     () -> assertEquals(1L, response.roomId()),
                     () -> assertEquals("TestRoom", response.roomName()),
                     () -> assertEquals(BookingStatus.CREATED, response.status()),
@@ -92,8 +86,7 @@ public class BookingServiceTest {
 
         @Test
         void shouldThrowNotFoundWhenRoomDoesNotExist() {
-            CreateBookingRequest request = new CreateBookingRequest(
-                    1L, LocalDate.of(2026, 4, 5), LocalDate.of(2026, 4, 10));
+            CreateBookingRequest request = buildCreateBookingRequest();
 
             when(roomRepository.findById(1L))
                     .thenReturn(Optional.empty());
@@ -106,11 +99,8 @@ public class BookingServiceTest {
 
         @Test
         void shouldThrowNotFoundWhenRoomLockFails() {
-            CreateBookingRequest request = new CreateBookingRequest(
-                    1L, LocalDate.of(2026, 4, 5), LocalDate.of(2026, 4, 10));
-
-            Room room = new Room(
-                    1L, "TestRoom", 10, new BigDecimal("50.00"), Instant.now());
+            CreateBookingRequest request = buildCreateBookingRequest();
+            Room room = buildRoom();
 
             when(roomRepository.findById(1L))
                     .thenReturn(Optional.of(room));
@@ -125,11 +115,8 @@ public class BookingServiceTest {
 
         @Test
         void shouldThrowConflictWhenRoomAlreadyBooked() {
-            CreateBookingRequest request = new CreateBookingRequest(
-                    1L, LocalDate.of(2026, 4, 5), LocalDate.of(2026, 4, 10));
-
-            Room room = new Room(
-                    1L, "TestRoom", 10, new BigDecimal("50.00"), Instant.now());
+            CreateBookingRequest request = buildCreateBookingRequest();
+            Room room = buildRoom();
 
             when(roomRepository.findById(1L))
                     .thenReturn(Optional.of(room));
@@ -145,4 +132,108 @@ public class BookingServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("findById())")
+    class findByIdTests {
+
+        @Test
+        void shouldReturnBookingWhenFound() {
+            Room room = buildRoom();
+            User user = buildUser();
+            Booking booking = buildBooking(room, user);
+
+            when(bookingRepository.findById(1L))
+                    .thenReturn(Optional.of(booking));
+            when(authService.getCurrentUserId())
+                    .thenReturn(1L);
+
+            BookingResponse response = bookingService.findById(1L);
+
+            assertAll(
+                    () -> assertEquals(1L, response.id()),
+                    () -> assertEquals(LocalDate.now().plusDays(1), response.startDate()),
+                    () -> assertEquals(LocalDate.now().plusDays(5), response.endDate()),
+                    () -> assertEquals(1L, response.roomId()),
+                    () -> assertEquals("TestRoom", response.roomName()),
+                    () -> assertEquals(BookingStatus.CREATED, response.status()),
+                    () -> assertEquals("TestUser", response.username()),
+                    () -> assertNotNull(response.createdAt())
+            );
+        }
+
+        @Test
+        void shouldThrowNotFoundWhenBookingDoesNotExist() {
+            when(bookingRepository.findById(1L))
+                    .thenReturn(Optional.empty());
+
+            assertThrowsExactly(NotFoundException.class,
+                    () -> bookingService.findById(1L));
+
+            verifyNoInteractions(authService);
+        }
+
+        @Test
+        void shouldThrowForbiddenWhenUserDoNotOwnBooking() {
+            User user = buildUser();
+
+            Booking booking = buildBooking(null, user);
+
+            when(bookingRepository.findById(1L))
+                    .thenReturn(Optional.of(booking));
+            when(authService.getCurrentUserId())
+                    .thenReturn(2L);
+
+            assertThrowsExactly(ForbiddenException.class,
+                    () -> bookingService.findById(1L));
+        }
+    }
+
+    @Nested
+    @DisplayName("cancel())")
+    class cancelBookingTests {
+
+        @Test
+        void shouldCancelBookingSuccessfully() {
+            Booking booking = buildBooking(null, buildUser());
+
+            when(bookingRepository.findById(1L))
+                    .thenReturn(Optional.of(booking));
+            when(authService.getCurrentUserId())
+                    .thenReturn(1L);
+
+            bookingService.cancelBookingById(1L);
+
+            assertEquals(BookingStatus.CANCELLED, booking.getStatus());
+        }
+    }
+
+    private Room buildRoom() {
+        Room room = new Room();
+        room.setId(1L);
+        room.setName("TestRoom");
+        return room;
+    }
+
+    private User buildUser() {
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("TestUser");
+        return user;
+    }
+
+    private Booking buildBooking(Room room, User user) {
+
+        return new Booking(1L,
+                room,
+                LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5),
+                BookingStatus.CREATED,
+                user,
+                Instant.now());
+    }
+
+    private CreateBookingRequest buildCreateBookingRequest() {
+        return new CreateBookingRequest(
+                1L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(5));
+    }
 }

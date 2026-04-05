@@ -69,8 +69,7 @@ public class BookingService {
             throw new ForbiddenException("You do not own this booking");
         }
 
-        return convertToDto(bookingRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Booking not found.")));
+        return convertToDto(booking);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
