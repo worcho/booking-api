@@ -38,7 +38,7 @@ public class AuthServiceTest {
     class create {
 
         @Test
-        public void shouldCreateUserSuccessfully() {
+        void shouldCreateUserSuccessfully() {
             CreateUserRequest request = new CreateUserRequest("TestUser", "TestPassword");
 
             when(userRepository.existsByUsername(request.username()))
@@ -60,7 +60,7 @@ public class AuthServiceTest {
         }
 
         @Test
-        public void shouldThrowConflictExceptionWhenUserExists() {
+        void shouldThrowConflictExceptionWhenUserExists() {
             CreateUserRequest request = new CreateUserRequest("TestUser", "TestPassword");
 
             when(userRepository.existsByUsername(request.username()))
